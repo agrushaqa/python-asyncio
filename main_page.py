@@ -9,6 +9,7 @@ from links import Links
 
 
 async def get_page(url: Links, params) -> Links:
+    print(f"send:{url.path}")
     async with ClientSession() as session:
         async with session.get(url=url.path, params=params) as response:
             url.content = await response.text()
@@ -29,17 +30,16 @@ async def execute_list_tasks(result_folder: str, subpages: list):
     tasks = []
     for page in subpages:
         tasks.append(asyncio.create_task(
-            get_page(Links(path=f"https://news.ycombinator.com/{page.path}",
+            get_page(Links(path=page.path,
                            name=page.name), {})))
-
     for task in tasks:
         page = await task
         filename = os.path.join(result_folder, page.name + ".html")
         task2 = asyncio.create_task(save_main_page(filename, page.content))
         await task2
-        time.sleep(5)  # TODO удалить - это для обхода ошибки
+        time.sleep(60)  # TODO удалить - это для обхода ошибки - > 30sec
         #  Sorry, we're not able to serve your requests this quickly.
-        # await asyncio.sleep(random.randrange(4, 9))
+        # await asyncio.sleep(random.randrange(5, 240))
         # workaround for error:
         # Sorry, we're not able to serve your requests this quickly.
 
