@@ -1,5 +1,7 @@
 import regex
 from bs4 import BeautifulSoup
+
+from config import Config
 from links import Links
 
 
@@ -12,11 +14,11 @@ def _get_parent_tag(html_doc, id_table='hnmain',
     return parent_tag
 
 
-def parse_main_page_by_id(html_doc, url):
+def parse_main_page_by_id(html_doc):
     parent_tag = _get_parent_tag(html_doc)
     result = []
     for link in parent_tag:
-        result.append(Links(path=f"{url}{link['id']}",
+        result.append(Links(path=f"{Config.sub_pages_base_url}{link['id']}",
                             name=remove_non_latin_letters(
                                 link.find('span', class_='titleline'
                                           ).find('a').contents[0])
@@ -25,12 +27,12 @@ def parse_main_page_by_id(html_doc, url):
 
 
 def remove_non_latin_letters(string, max_length=40):
-    return regex.sub(r'[^\p{Latin} ]', u'', string)[:max_length]
+    return regex.sub(r'[^\p{Latin} \-0-9\.]', u'', string)[:max_length]
 
 
 def is_url(text_for_check) -> bool:
     pattern = regex.compile(
-        r'^(http|https)\:\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,5}(\/\S*)*$')
+        Config.url_regexp)
     if regex.fullmatch(pattern, text_for_check):
         return True
     else:
