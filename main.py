@@ -16,21 +16,21 @@ async def open_session(func, *args):
         return await func(session, *args)
 
 
-def refresh_page():
+def refresh_page(get_subpages, get_list_links):
     while True:
         print("refresh main page")
         print(f"wait {Config.period_download} second...")
         print(datetime.datetime.now())
         time.sleep(Config.period_download)
         main_page = asyncio.run(open_session(task_main_page, path))
-        updated_list_links = get_list_api_urls_from_main_page(main_page)
+        updated_list_links = get_list_links(main_page)
         new_links = []
         for i_link in updated_list_links:
             if i_link not in list_links:
                 new_links.append(i_link)
                 list_links.append(i_link)
         if len(new_links) > 0:
-            asyncio.run(open_session(read_list_articles,
+            asyncio.run(open_session(get_subpages,
                                      new_links,
                                      Config.get_result_folder()))
         else:
@@ -49,9 +49,10 @@ if __name__ == "__main__":
         asyncio.run(open_session(read_list_articles,
                                  list_links,
                                  Config.get_result_folder()))
-        refresh_page()
+        refresh_page(read_list_articles, get_list_api_urls_from_main_page)
     else:
         list_links = parse_main_page_by_id(main_page_content)
         asyncio.run(open_session(execute_list_tasks,
                                  list_links,
                                  Config.get_result_folder()))
+        refresh_page(execute_list_tasks, parse_main_page_by_id)
