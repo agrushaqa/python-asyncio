@@ -20,6 +20,14 @@ async def get_page(session: ClientSession, url: Links, params) -> Links:
         return url
 
 
+async def get_sub_page_semaphore(session,
+                                 semaphore,
+                                 url: Links,
+                                 params) -> Links:
+    async with semaphore:
+        return await get_sub_page(session, url, params)
+
+
 async def get_sub_page(session, url: Links, params) -> Links:
     print(f"(sub_page) send:{url.path}")
     try:
@@ -60,18 +68,20 @@ async def task_main_page(session, filename: str) -> str:
     return main_page.content
 
 
-async def execute_list_tasks(session, result_folder: str, subpages: list):
+async def execute_list_tasks(session, subpages: list, result_folder: str):
     tasks = []
+    semaphore = asyncio.Semaphore(1)
     for page in subpages:
         tasks.append(asyncio.create_task(
-            get_sub_page(session, Links(path=page.path,
-                                        name=page.name), {})))
+            get_sub_page_semaphore(session, semaphore,
+                                   Links(path=page.path,
+                                         name=page.name), {})))
     for task in tasks:
         page = await task
         filename = os.path.join(result_folder, page.name + ".html")
         task2 = asyncio.create_task(save_page_as_text(filename, page.content))
         await task2
-        time.sleep(30)  # TODO удалить - это для обхода ошибки - > 30sec
+        time.sleep(2)  # TODO удалить - это для обхода ошибки - > 30sec
         #  Sorry, we're not able to serve your requests this quickly.
         # await asyncio.sleep(random.randrange(5, 240))
         # workaround for error:
