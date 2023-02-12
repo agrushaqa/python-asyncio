@@ -25,7 +25,6 @@ async def read_list_articles(
                                         ), {})))
     for task in tasks:
         page = await task
-        print("xxxy for url:")
         print(page.path)
         json_text = get_json_from_text(page.content)
         external_links = get_url_from_text_param(json_text)

@@ -3,6 +3,7 @@ import pathlib
 
 
 class Config:
+    period_download = 600
     api_base_url = "https://hacker-news.firebaseio.com/v0/item/"
     api_params_url = ".json?print=pretty"
     saved_main_page = "mainpage.html"

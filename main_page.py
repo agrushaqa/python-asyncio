@@ -3,6 +3,7 @@ import os.path
 import time
 from threading import Thread
 
+import aiofiles
 import yaml
 from aiohttp import ClientSession
 
@@ -78,12 +79,11 @@ async def execute_list_tasks(session, result_folder: str, subpages: list):
 
 
 async def save_page_as_text(filename: str, data: str):
-    with open(filename, 'w+', encoding=Config.saved_file_encoding) as file:
-        tr = Thread(target=file.write, args=(data,))
-        tr.start()
+    async with aiofiles.open(filename, 'w+',
+                             encoding=Config.saved_file_encoding) as file:
+        await file.write(data)
 
 
 async def save_page_as_binary(filename: str, data: str):
-    with open(filename, "wb") as file:
-        tr = Thread(target=file.write, args=(data,))
-        tr.start()
+    async with aiofiles.open(filename, "wb") as file:
+        await file.write(data)
